@@ -1,98 +1,177 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({'font.size':8})
+
 # analog signal x axis
 time_of_view        = 1.    # s.
 analog_time         = np.linspace (0, time_of_view, 10e5)   # s.
+zero_xlim           = 0
 
+def get_signal(signal):
+    return amplitude * np.cos(2 * np.pi * signal.frequency * signal.time_point + signal.phase)
 
-def get_signal(frequency, time_point):
-    return amplitude * np.cos(2 * np.pi * frequency * time_point + phase)
-
-def check_aliasing(frequency, sampling_rate):
-    global isAliasing
+def shift_frequency(frequency, sampling_rate,isAliasing):
     if 2 * np.pi * frequency / sampling_rate <= np.pi:
-        return frequency
+        return frequency,isAliasing
     else:
         isAliasing = 1;
-        frequency = np.absolute(frequency - sampling_rate)
-        return check_aliasing(frequency, sampling_rate)
+        frequency = frequency - sampling_rate
+        return shift_frequency(frequency, sampling_rate,isAliasing)
+
+def set_axes(index,signal,phasor,isAliasing,check):
+    set_x,set_y=[],[]
+    for i in range(index):
+        if isAliasing[i]==check:
+            phasor[i] = np.real(signal[i].amplitude * np.exp(complex(0, signal[i].phase)) / 2)
+            if signal[i].frequency == 0:
+                set_x.append(signal[i].frequency)
+                set_y.append(phasor[i])
+            else:
+                set_x.extend([-signal[i].frequency, signal[i].frequency])
+                set_y.extend([phasor[i], phasor[i]])
+    return set_x,set_y
+
+class signal:
+    def __init__(self,signal,frequency=None,amplitude=None,phase=None,time_point=None):
+        if signal==None:
+            self.frequency=frequency
+            self.amplitude=amplitude
+            self.phase=phase
+            self.time_point=time_point
+        else:
+            self.frequency = signal.frequency
+            self.amplitude = signal.amplitude
+            self.phase = signal.phase
+            self.time_point = signal.time_point
+        self.sinusoid_signal=get_signal(self)
+
+    def set_sinusoid(self):
+        self.sinusoid_signal=get_signal(self)
+
+    def __str__(self):
+        return("Frequency : "+str(self.frequency)+"Hz\n"+
+                "Amplitude : "+str(self.amplitude)+"\n"+
+                "Phase : "+str(self.phase)+"radian\n"+
+                "time point : "+str(self.time_point))
+
 
 # iterate as much as input value
 while(1):
-    try:
+    # try:
         index=int(input("How many signals ? "))
         sampling_rate = float(input("sampling rate : "))  # Hz
+
+        analog_signal       =[signal]*index
+        sum_signal          =0
+        sampling_signal     =[signal]*index
+        sum_sampling_signal =0
+
+        recovered_signal    =[signal]*index
+        sum_recovered_signal=0
+        recovered_sampled_signal    = [signal] * index
+        sum_recovered_sampled_signal= 0
+
+        isAliasing          =[0]*index
+        recovered_frequency =[0]*index
         for i in range(index):
             # global variable
-            isAliasing          = 0
-            recovered_frequency = 0
 
             # analog signal
-            carrier_frequency   = float(input("analog signal frequency : "))
-            amplitude           = float(input("analog signal amplitude : "))
-            phase               = float(input("analog signal phase\n"
-                                        "ex) input : 3 → output : 3pi\n : "))
-            phase               = np.pi*phase
+            carrier_frequency   = float(input(str(i+1)+". analog signal frequency (Hz) : "))
+            amplitude           = float(input(str(i+1)+". analog signal amplitude : "))
+            phase               = float(input(str(i+1)+". analog signal phase (degree) : "))
+            phase               = phase*np.pi/180
 
             # sampling parameter
             sampling_period     = 1. / (sampling_rate+1) # s
             sample_number       = time_of_view / sampling_period
             sampling_time       = np.linspace (0, time_of_view, sample_number)
 
-            analog_signal       = get_signal (carrier_frequency, analog_time)
-            sampling_signal     = get_signal (carrier_frequency, sampling_time)
-            # quantizing_signal   = np.round (sampling_signal / quantizing_step) * quantizing_step
-            recovered_frequency = check_aliasing(carrier_frequency,sampling_rate)
-            recovered_signal    = get_signal (recovered_frequency, analog_time)
+            analog_signal[i]    = signal(None,carrier_frequency,amplitude,phase,analog_time)
+            sum_signal+=analog_signal[i].sinusoid_signal
+            zero_xlim=max(zero_xlim,np.absolute(analog_signal[i].frequency))
 
-            fig = plt.figure ()
-            fig1=fig.add_subplot(3,2,1)
-            fig1.plot (analog_time, analog_signal)
-            fig1.stem (sampling_time, sampling_signal, linefmt='r-', markerfmt='rs', basefmt='r-')
-            fig1.set_title("Analog to digital signal Sampling")
-            fig1.set_xlim(0,sampling_period*5)
-            fig1.set_xlabel("Time")
-            fig1.set_ylabel("Amplitude")
+            sampling_signal[i]  = signal(None,carrier_frequency,amplitude,phase,sampling_time)
+            sum_sampling_signal+= sampling_signal[i].sinusoid_signal
 
-            fig2=fig.add_subplot(3,2,2)
-            fig2.plot (analog_time, recovered_signal)
-            fig2.stem (sampling_time, sampling_signal, linefmt='r-', markerfmt='rs', basefmt='r-')
-            fig2.set_title("digital to Analog Sampled Signal")
-            fig2.set_xlim(0,sampling_period*5)
-            fig2.set_xlabel("Time")
-            fig2.set_ylabel("Amplitude")
+            recovered_frequency[i],isAliasing[i] = shift_frequency(analog_signal[i].frequency,sampling_rate,isAliasing[i])
+            recovered_signal[i]             = signal(analog_signal[i])
+            recovered_signal[i].frequency   = recovered_frequency[i]
+            recovered_signal[i].set_sinusoid()
+            sum_recovered_signal+=recovered_signal[i].sinusoid_signal
 
-            fig1=fig.add_subplot(3,2,5)
-            phasor=np.real(amplitude*np.exp(complex(0,phase))/2)
-            set_x=np.linspace(-carrier_frequency, carrier_frequency, 2)
-            set_y=np.array([phasor,phasor])
-            fig1.bar(set_x,set_y,width=1)
-            fig1.set_title("Analog Signal Frequency Domain")
-            get_xlim=fig1.get_xlim()
-            fig1.set_xlabel("Frequency")
-            fig1.set_ylabel("Phasor")
+            recovered_sampled_signal[i]             =signal(recovered_signal[i])
+            recovered_sampled_signal[i].time_point  =sampling_time
+            recovered_sampled_signal[i].set_sinusoid()
+            sum_recovered_sampled_signal+=recovered_sampled_signal[i].sinusoid_signal
 
+        zero_y=[]
+        zero_x=np.linspace(-zero_xlim*3/2,zero_xlim*3/2,10e5)
+        for x in zero_x:
+            zero_y.append(0)
 
-            fig2=fig.add_subplot(3,2,6)
-            if recovered_frequency==0:
-                set_x=recovered_frequency
-                set_y=phasor;
-            else:
-                set_x=np.linspace(-recovered_frequency, recovered_frequency, 2)
-                set_y=np.array([phasor,phasor])
-            fig2.bar(set_x,set_y,width=1)
-            if isAliasing:
-                fig2.set_title("Aliasing occurred!")
-            else:
-                fig2.set_title("No Aliasing")
-            fig2.set_xlim(get_xlim)
-            fig2.set_xlabel("Frequency")
-            fig2.set_ylabel("Phasor")
+        fig = plt.figure ()
+        fig1=fig.add_subplot(3,3,1)
+        fig1.plot (analog_time, sum_signal)
+        fig1.plot (zero_x, zero_y,'k-')
+        fig1.set_title("Analog Signal")
+        fig1.set_xlim(0,sampling_period*5)
+        fig1.set_xlabel("Time")
+        fig1.set_ylabel("Amplitude")
 
+        fig2=fig.add_subplot(3,3,2)
+        fig2.plot (analog_time, sum_signal)
+        fig2.stem (sampling_time, sum_sampling_signal, linefmt='r-', markerfmt='rs', basefmt='k-')
+        fig2.set_title("Sampling Signal")
+        fig2.set_xlim(0,sampling_period*5)
+        fig2.set_xlabel("Time")
 
-            fig.show()
-            fig.clear()
+        fig3=fig.add_subplot(3,3,3)
+        fig3.plot (analog_time, sum_recovered_signal)
+        fig3.stem (sampling_time, sum_recovered_sampled_signal, linefmt='r-', markerfmt='rs', basefmt='k-')
+        fig3.set_title("Recovered Signal")
+        fig3.set_xlim(0,sampling_period*5)
+        fig3.set_xlabel("Time")
+
+        phasor=[0.]*index
+        set_x_nonAliasing ,set_y_nonAliasing=[],[]
+        set_x_Aliasing, set_y_Aliasing={},{}
+        set_x_nonAliasing, set_y_nonAliasing = set_axes(index, analog_signal, phasor, isAliasing,0)
+        set_x_Aliasing["analog"], set_y_Aliasing["analog"] = set_axes(index, analog_signal, phasor, isAliasing,1)
+        set_x_Aliasing["recover"], set_y_Aliasing["recover"] = set_axes(index, recovered_signal, phasor, isAliasing, 1)
+
+        fig4=fig.add_subplot(3,3,7)
+        fig4.bar(set_x_nonAliasing,set_y_nonAliasing,width=2,color='b')
+        fig4.bar(set_x_Aliasing["analog"], set_y_Aliasing["analog"], width=2,color='b')
+        fig4.plot (zero_x, zero_y,'k-')
+        fig4.set_title("Analog Signal")
+        get_xlim=fig4.get_xlim()
+        fig4.set_xlabel("Frequency")
+        fig4.set_ylabel("Phasor")
+
+        fig5 = fig.add_subplot(3, 3, 8)
+        fig5.bar(set_x_nonAliasing, set_y_nonAliasing, width=2,color='b')
+        fig5.bar(set_x_Aliasing["analog"],set_y_Aliasing["analog"],width=2,color='b',alpha=0.5)
+        fig5.bar(set_x_Aliasing["recover"],set_y_Aliasing["recover"],width=2,color='r',alpha=0.5)
+        fig5.plot(zero_x, zero_y, 'k-')
+        fig5.set_title("Check Aliasing")
+        fig5.set_xlim(get_xlim)
+        fig5.set_xlabel("Frequency")
+
+        fig6=fig.add_subplot(3,3,9)
+        fig6.bar(set_x_nonAliasing,set_y_nonAliasing,width=2,color='b')
+        fig6.bar(set_x_Aliasing["recover"], set_y_Aliasing["recover"], width=2,color='r')
+        fig6.plot(zero_x, zero_y,color='k')
+        if isAliasing:
+            fig6.set_title("Aliasing occurred!")
+        else:
+            fig6.set_title("No Aliasing")
+        fig6.set_xlim(get_xlim)
+        fig6.set_xlabel("Frequency")
+
+        fig.show()
+        fig.clear()
         break
-    except ValueError as e:
-        print("Value error : ",e)
+    # except ValueError as e:
+    #     print("Value error : ",e)
