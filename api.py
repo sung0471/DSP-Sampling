@@ -69,5 +69,5 @@ api.add_resource(return_js,'/js/<string:directory>')
 api.add_resource(return_img,'/figures/<string:directory>')
 
 if __name__ == '__main__':
-    app.run(debug=True)        # 디버그 모드 실행
-    # app.run(host='0.0.0.0')     # 외부에서 접속가능한 서버로 실행
+    # app.run(debug=True)        # 디버그 모드 실행
+    app.run(host='0.0.0.0')     # 외부에서 접속가능한 서버로 실행
