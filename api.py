@@ -1,5 +1,4 @@
 import sampling
-import time
 import json
 import os
 from flask import Flask, make_response, render_template, request, send_file

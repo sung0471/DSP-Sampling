@@ -236,8 +236,6 @@ def printfig(sum_signal, \
     fig6.set_xlim(get_xlim)
     fig6.set_xlabel("Cyclic Frequency")
 
-    fig.show()
-
     import os
     basedir = os.path.abspath(os.path.dirname(__file__))
     fig.savefig(basedir+'/templates/figures/result'+str(version)+'.svg')
