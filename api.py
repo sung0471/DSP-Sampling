@@ -34,7 +34,7 @@ class sampling_data(Resource):
 
         sampling.do_sampling(index,carrier_frequency,amplitude,phase)
         while(1):
-            if os.path.isfile(basedir+"\\templates\\figures\\result"+str(sampling.version)+".svg"):
+            if os.path.isfile(basedir+"/templates/figures/result"+str(sampling.version)+".svg"):
                 check[0]=1
                 print("make image")
                 break
@@ -57,7 +57,7 @@ class return_img(Resource):
     def get(self,directory):
         res = make_response(render_template("figures/" + directory))
         res.headers['Content-type'] = 'image/svg+xml'
-        os.remove(basedir + "\\templates\\figures\\result"+str(sampling.version)+".svg")
+        os.remove(basedir + "/templates/figures/result"+str(sampling.version)+".svg")
         sampling.version+=1
         print("remove img")
         return res

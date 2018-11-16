@@ -240,7 +240,7 @@ def printfig(sum_signal, \
 
     import os
     basedir = os.path.abspath(os.path.dirname(__file__))
-    fig.savefig(basedir+'\\templates\\figures\\result'+str(version)+'.svg')
+    fig.savefig(basedir+'/templates/figures/result'+str(version)+'.svg')
 
 
 # index: int
