@@ -352,27 +352,18 @@ def printFIRFig():
     fig3.set_xlim(0, 1 / analog_min_freq * 3)
     fig3.set_xlabel("Time")
 
-    set_x_magnitude, set_y_magnitude = ,[]
+    set_x_magnitude, set_y_magnitude = [],[]
     set_x_phase,set_y_phase=[],[]
 
     fig2 = fig.add_subplot(2, 3, 2)
-    fig2.bar(set_x_nonAliasing_s, set_y_nonAliasing, width=0.5, color='b')
-    fig2.bar(set_x_Aliasing_analog2s, set_y_Aliasing["analog"], width=0.5, color='b', alpha=0.4)
-    fig2.bar(set_x_Aliasing_recover2s, set_y_Aliasing["recover"], width=0.5, color='r', alpha=0.4)
-    fig2.plot(zero_x, zero_y, 'k-')
+    fig2.plot(set_x_magnitude,set_y_magnitude)
     fig2.set_title("Magnitude of the Filter")
-    fig2.set_xlim(get_xlim * 2 * np.pi / sampling_rate)
-    fig2.set_xticks([-2 * np.pi, -np.pi, 0, np.pi, 2 * np.pi])
-    fig2.set_xticklabels(['-2π', '-π', '0', 'π', '2π'])
-    fig2.set_xlabel("Normalized Radian Frequency")
+    fig2.set_xlabel("Sampling frequency")
 
     fig6 = fig.add_subplot(2, 3, 5)
-    fig6.bar(set_x_nonAliasing, set_y_nonAliasing, width=2, color='b')
-    fig6.bar(set_x_Aliasing["recover"], set_y_Aliasing["recover"], width=2, color='r')
-    fig6.plot(zero_x, zero_y, color='k')
-    fig6.set_title("Magnitude of the Filter")
-    fig6.set_xlim(get_xlim)
-    fig6.set_xlabel("Cyclic Frequency")
+    fig2.plot(set_x_phase,set_y_phase)
+    fig6.set_title("Phase of the Filter")
+    fig6.set_xlabel("Sampling frequency")
 
     fig.show()
 
