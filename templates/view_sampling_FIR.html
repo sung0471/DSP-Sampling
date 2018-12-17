@@ -43,7 +43,6 @@
         .footer{
             display:inline-block;
             clear: both;
-            float:right;
             width:100%;
             height:60%;
         }
@@ -65,12 +64,18 @@
         <button onclick="add_signal()">신호 추가</button> <button onclick="delete_signal()">신호 삭제</button>
         <div id="input_area">
             <div>Sampling Rate : <input type="text" id="sampling_rate" value=20></div>
-            <div id="0">Frequency(Hz) : <input type="text" id="frequency[0]" value=10>
+            <div id="0">
+                Cos or Sin :
+                <select id="isCos[0]">
+                    <option value="0">Cosine</option>
+                    <option value="1">Sin</option>
+                </select>
+                Frequency(Hz) : <input type="text" id="frequency[0]" value=10>
                 Amplitude : <input type="text" id="amplitude[0]" value=3>
                 Phase(Degree) : <input type="text" id="phase[0]" value=30><br>
             </div>
         </div>
-        <button onclick="send_data()">샘플링</button>
+        <button onclick="send_data('sampling')">샘플링</button> <button onclick="send_data('FIR')">FIR</button>
     </nav>
     <aside class="aside">
         <div style="text-align: center;">log</div><br>

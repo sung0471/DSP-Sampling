@@ -19,7 +19,7 @@ function wait_request() {
             imgobj.src="figures/result"+String(version["version"])+".svg";
             plotarea.appendChild(imgobj);
 
-            logobj.innerHTML+="<br>Finish Sampling!";
+            logobj.innerHTML+="<br>Finish Recovering!";
         }
     };
     fileReader.open('GET', url, true);          // url 열기
