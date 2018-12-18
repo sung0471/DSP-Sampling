@@ -2,7 +2,7 @@ import json
 import os
 from flask import Flask, make_response, render_template, request, send_file
 from flask_restful import Resource, Api,reqparse
-from sampling_FIR import input_signal, sampling, recovering, printSamplingFig
+from sampling_FIR import input_signal, sampling, recovering, printSamplingFig, firFiltering, printFIRFig
 import sampling_FIR
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -32,11 +32,17 @@ class sampling_data(Resource):
         amplitude=json_data["amplitude"]
         phase=json_data["phase"]
         sampling_rate=json_data["sampling_rate"]
+        checkFir = int(json_data["check"])
 
         input_signal(index,sampling_rate,isCos,carrier_frequency,amplitude,phase)
         sampling()
-        recovering()
-        printSamplingFig()
+        if checkFir == 0:
+            recovering(checkFir)
+            printSamplingFig()
+        else:
+            firFiltering()
+            recovering(checkFir)
+            printFIRFig()
 
         while(1):
             if os.path.isfile(basedir+"/templates/figures/result"+str(sampling_FIR.version)+".svg"):

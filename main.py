@@ -1,5 +1,5 @@
 import numpy as np
-from sampling_FIR import input_signal, sampling, recovering, printSamplingFig, printFIRFig
+from sampling_FIR import input_signal, sampling, firFiltering, recovering, printSamplingFig, printFIRFig
 
 if __name__ == '__main__':
     index = int(input("How many signals ? "))
@@ -28,9 +28,11 @@ if __name__ == '__main__':
     # sampling process
     input_signal(index, sampling_rate, isCos, carrier_frequency, amplitude, phase)
     sampling()
-    check=0
-    recovering(check)
+    check=1
     if check==0:
+        recovering(check)
         printSamplingFig()
     else:
+        firFiltering()
+        recovering(check)
         printFIRFig()

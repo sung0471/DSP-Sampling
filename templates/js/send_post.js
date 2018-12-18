@@ -29,6 +29,7 @@ function send_data(check) {
     json_data["amplitude"] = amplitude;
     json_data["phase"] = phase;
     json_data["sampling_rate"]=parseFloat(document.getElementById("sampling_rate").value);
+    json_data["check"]=check;
 
     serverSend.open('POST', url, true);          // url 열기
     serverSend.setRequestHeader("Content-type", "application/json");

@@ -196,7 +196,7 @@ def getFilterAmplitude(sampling_freq):
 
 def getFilterPhase(sampling_freq):
     quotient = int(-2*sampling_freq / (2*np.pi))
-    phase=-2*sampling_freq-(quotient*2*np.pi)
+    phase=-2*sampling_freq-quotient*2*np.pi
     return phase
 
 
@@ -215,24 +215,26 @@ def firFiltering():
         fir_Signal[i].amplitude*=firAmpli[i]
         fir_Signal[i].phase+=firPhase[i]
         fir_Signal[i].set_sinusoid()
-        sum_fir_Signal[i]+=fir_Signal[i].sinusoid_signal
+        sum_fir_Signal+=fir_Signal[i].sinusoid_signal
 
         fir_sampling_Signal[i]=signal(fir_Signal[i])
         fir_sampling_Signal[i].time_point = sampling_time
         fir_sampling_Signal[i].set_sinusoid()
-        sum_fir_sampling_Signal[i]+=fir_sampling_Signal[i].sinusoid_signal
+        sum_fir_sampling_Signal+=fir_sampling_Signal[i].sinusoid_signal
 
 def recovering(check):
     global recovered_signal, sum_recovered_signal, recovered_sampled_signal, sum_recovered_sampled_signal, \
     isAliasing, recovered_frequency
 
-    signal_list=[]
-    if check==0:
-        signal_list=a2s_signal
-    else:
-        signal_list=fir_Signal
-
     index = len(analog_signal)
+
+    signal_list=[signal]*index
+    for i in range(index):
+        if check==0:
+            signal_list[i]=signal(a2s_signal[i])
+        else:
+            signal_list[i]=signal(fir_Signal[i])
+
     for i in range(index):
         recovered_frequency[i], isAliasing[i] = shift_frequency(signal_list[i].frequency,
                                                                 sampling_rate, isAliasing[i])
@@ -337,6 +339,7 @@ def printFIRFig():
 
     fig = plt.figure()
 
+
     fig1 = fig.add_subplot(2, 3, 1)
     fig1.plot(analog_to_sampling_time, sum_a2s_signal)
     fig1.stem(sampling_time, sum_sampling_signal, linefmt='r-', markerfmt='rs', basefmt='k-')
@@ -351,16 +354,19 @@ def printFIRFig():
     fig3.set_xlim(0, 1 / analog_min_freq * 3)
     fig3.set_xlabel("Time")
 
-    set_x_magnitude, set_y_magnitude = np.linspace(-3,3,10e5),[]
-    set_x_phase,set_y_phase=np.linspace(-3,3,10e5),[]
+    set_x_magnitude = np.linspace(-6,6,10e5)
+    set_y_magnitude = np.absolute(getFilterAmplitude(set_x_magnitude))
+    set_x_phase = np.linspace(-6,6,10e5)
+    set_y_phase=[]
+    for x in set_x_phase:
+        set_y_phase.append(getFilterPhase(x))
 
     fig2 = fig.add_subplot(2, 3, 2)
     fig2.plot(set_x_magnitude,set_y_magnitude)
     fig2.set_title("Magnitude of the Filter")
-    fig2.set_xlabel("Sampling frequency")
 
     fig6 = fig.add_subplot(2, 3, 5)
-    fig2.plot(set_x_phase,set_y_phase)
+    fig6.plot(set_x_phase,set_y_phase)
     fig6.set_title("Phase of the Filter")
     fig6.set_xlabel("Sampling frequency")
 
@@ -371,4 +377,4 @@ def printFIRFig():
     fig.savefig(basedir+'/templates/figures/result'+str(version)+'.svg')
 
 if __name__ == '__main__':
-    print(getFilterPhase(2/3*np.pi))
+    pass
