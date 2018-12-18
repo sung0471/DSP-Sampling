@@ -195,11 +195,10 @@ def getFilterAmplitude(sampling_freq):
     return 1/5*(2*np.cos(2*sampling_freq)+2*np.cos(sampling_freq)+1)
 
 def getFilterPhase(sampling_freq):
-    phase = -2*sampling_freq % (2*np.pi)
-    if(sampling_freq>0):
-        return -phase
-    else:
-        return phase
+    quotient = int(-2*sampling_freq / (2*np.pi))
+    phase=-2*sampling_freq-(quotient*2*np.pi)
+    return phase
+
 
 def firFiltering():
     global fir_Signal, sum_fir_Signal, fir_sampling_Signal, sum_fir_sampling_Signal
@@ -352,8 +351,8 @@ def printFIRFig():
     fig3.set_xlim(0, 1 / analog_min_freq * 3)
     fig3.set_xlabel("Time")
 
-    set_x_magnitude, set_y_magnitude = [],[]
-    set_x_phase,set_y_phase=[],[]
+    set_x_magnitude, set_y_magnitude = np.linspace(-3,3,10e5),[]
+    set_x_phase,set_y_phase=np.linspace(-3,3,10e5),[]
 
     fig2 = fig.add_subplot(2, 3, 2)
     fig2.plot(set_x_magnitude,set_y_magnitude)
@@ -372,4 +371,4 @@ def printFIRFig():
     fig.savefig(basedir+'/templates/figures/result'+str(version)+'.svg')
 
 if __name__ == '__main__':
-    pass
+    print(getFilterPhase(2/3*np.pi))
