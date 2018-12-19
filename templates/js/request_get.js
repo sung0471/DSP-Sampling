@@ -15,7 +15,7 @@ function wait_request() {
             var date=new Date();
             var imgobj = new Image();
             imgobj.id = "plot";
-            imgobj.setAttribute("height","90%");
+            imgobj.setAttribute("height","600px");
             imgobj.src="figures/result"+String(version["version"])+".svg";
             plotarea.appendChild(imgobj);
 
